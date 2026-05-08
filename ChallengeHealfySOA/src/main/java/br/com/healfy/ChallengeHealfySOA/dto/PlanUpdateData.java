@@ -2,7 +2,7 @@ package br.com.healfy.ChallengeHealfySOA.dto;
 
 import br.com.healfy.ChallengeHealfySOA.enums.Goals;
 
-public record PlanUpdateDate(
+public record PlanUpdateData(
 
         Long id,
         Goals goal,

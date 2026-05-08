@@ -2,24 +2,20 @@ package br.com.healfy.ChallengeHealfySOA.controller;
 
 import br.com.healfy.ChallengeHealfySOA.dto.PlanDetailedData;
 import br.com.healfy.ChallengeHealfySOA.dto.PlanRegistrationData;
-import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateDate;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateData;
 import br.com.healfy.ChallengeHealfySOA.model.MealPlanModel;
 import br.com.healfy.ChallengeHealfySOA.repository.MealPlanRepository;
-import br.com.healfy.ChallengeHealfySOA.service.MealPlanService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/mealplans")
@@ -39,7 +35,7 @@ public class PlanController {
 //Mostra todos os elementos
     @GetMapping
     public ResponseEntity<Page<PlanDetailedData>> readPlans(
-            @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao)
+            @PageableDefault(size = 10, sort = {"userName"}) Pageable paginacao)
     {
         Page page = repository.findAll(paginacao).map(PlanDetailedData::new);
 
@@ -55,7 +51,7 @@ public class PlanController {
    @PutMapping
    @Transactional
     public ResponseEntity<PlanDetailedData> updatePlan
-           (@RequestBody @Valid PlanUpdateDate date) {
+           (@RequestBody @Valid PlanUpdateData date) {
         MealPlanModel plan = repository.getReferenceById(date.id());
         plan.updateInformation(date);
         return ResponseEntity.ok(new PlanDetailedData(plan));

@@ -1,13 +1,9 @@
 package br.com.healfy.ChallengeHealfySOA.model;
 
-import br.com.healfy.ChallengeHealfySOA.dto.PlanDetailedData;
 import br.com.healfy.ChallengeHealfySOA.dto.PlanRegistrationData;
-import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateDate;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateData;
 import br.com.healfy.ChallengeHealfySOA.enums.Goals;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,7 +44,7 @@ public class MealPlanModel {
                 this.goal = data.goal();
                 this.calories = data.calories();
     }
-    public void updateInformation(PlanUpdateDate data){
+    public void updateInformation(PlanUpdateData data){
         if(data.goal() != null ){
             this.goal = data.goal();
         }
