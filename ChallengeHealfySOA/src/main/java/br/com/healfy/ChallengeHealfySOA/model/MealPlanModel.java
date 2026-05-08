@@ -1,5 +1,8 @@
 package br.com.healfy.ChallengeHealfySOA.model;
 
+import br.com.healfy.ChallengeHealfySOA.dto.PlanDetailedData;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanRegistrationData;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateDate;
 import br.com.healfy.ChallengeHealfySOA.enums.Goals;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,14 +25,13 @@ public class MealPlanModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty(message = "O preenchimento do nome de usuário é obrigatório")
+    private boolean active = true;
     private String userName;
 
-    @NotNull(message = "O preenchimeto do objetivo é obrigatório (EX: EMAGRECIMENTO) ")
     @Enumerated(EnumType.STRING)
     private Goals goal;
 
-    @Positive(message="A quantidade de calorias deve ser positiva")
+
     private int calories;
 
     private LocalDate planDate;
@@ -40,4 +42,24 @@ public class MealPlanModel {
             planDate = LocalDate.now();
         }
     }
+
+    public MealPlanModel(PlanRegistrationData data){
+                this.userName = data.userName();
+                this.goal = data.goal();
+                this.calories = data.calories();
+    }
+    public void updateInformation(PlanUpdateDate data){
+        if(data.goal() != null ){
+            this.goal = data.goal();
+        }
+        if(data.calories() != null ){
+            this.calories = data.calories();
+        }
+    }
+
+    public void delete() {
+        this.active = false;
+    }
+
+
 }

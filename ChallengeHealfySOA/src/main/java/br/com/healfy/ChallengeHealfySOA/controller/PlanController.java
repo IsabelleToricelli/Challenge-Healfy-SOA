@@ -1,14 +1,24 @@
 package br.com.healfy.ChallengeHealfySOA.controller;
 
+import br.com.healfy.ChallengeHealfySOA.dto.PlanDetailedData;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanRegistrationData;
+import br.com.healfy.ChallengeHealfySOA.dto.PlanUpdateDate;
 import br.com.healfy.ChallengeHealfySOA.model.MealPlanModel;
+import br.com.healfy.ChallengeHealfySOA.repository.MealPlanRepository;
 import br.com.healfy.ChallengeHealfySOA.service.MealPlanService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,52 +26,47 @@ import java.util.List;
 public class PlanController {
 
     @Autowired
-    private MealPlanService mealPlanService;
+    private MealPlanRepository repository;
 
     @PostMapping
-    public ResponseEntity<Object> createPlan (@Valid @RequestBody MealPlanModel planModel){
-        try{
-            MealPlanModel planEW = mealPlanService.createPlan(planModel);
-            return ResponseEntity.status(HttpStatus.CREATED).body(planEW);
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    @Transactional
+    public ResponseEntity<PlanDetailedData> createPlan (@Valid @RequestBody PlanRegistrationData data, UriComponentsBuilder uriBuilder){
+       MealPlanModel plan = new MealPlanModel(data);
+       repository.save(plan);
+       URI uri = uriBuilder.path("/mealplans/{id}").buildAndExpand(plan.getId()).toUri();
+       return ResponseEntity.created(uri).body(new PlanDetailedData(plan));
     }
-
+//Mostra todos os elementos
     @GetMapping
-    public List<MealPlanModel> readPlans(){
+    public ResponseEntity<Page<PlanDetailedData>> readPlans(
+            @PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao)
+    {
+        Page page = repository.findAll(paginacao).map(PlanDetailedData::new);
 
-        return mealPlanService.readAllPlans();
+        return ResponseEntity.ok(page);
     }
-
+//Mostra um elemento especifico buscado por seu id
     @GetMapping("/{id}")
-   public ResponseEntity<Object> getPlan(@PathVariable Long id){
-        try{
-            MealPlanModel planModel = mealPlanService.readPlanById(id);
-            return ResponseEntity.status(HttpStatus.OK).body(planModel);
-
-        }catch (EntityNotFoundException e){
-            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
-        }
+   public ResponseEntity<PlanDetailedData> getPlan(@PathVariable Long id){
+            MealPlanModel planModel = repository.getReferenceById(id);
+            return ResponseEntity.ok(new PlanDetailedData(planModel));
    }
-   @PutMapping("/{id}")
-    public ResponseEntity<Object> updatePlan(@PathVariable Long id, @Valid @RequestBody MealPlanModel plan) {
-        try {
-            MealPlanModel planModel =  mealPlanService.updatePlanById(id, plan);
-            return ResponseEntity.status(HttpStatus.OK).body(planModel);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+
+   @PutMapping
+   @Transactional
+    public ResponseEntity<PlanDetailedData> updatePlan
+           (@RequestBody @Valid PlanUpdateDate date) {
+        MealPlanModel plan = repository.getReferenceById(date.id());
+        plan.updateInformation(date);
+        return ResponseEntity.ok(new PlanDetailedData(plan));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deletePlan(@PathVariable Long id){
-        try{
-            mealPlanService.deletePlanById(id);
-            return ResponseEntity.noContent().build();
+    @Transactional
+    public ResponseEntity<Void> deletePlan(@PathVariable Long id){
+        MealPlanModel plan = repository.getReferenceById(id);
+        plan.delete();
+        return ResponseEntity.noContent().build();
 
-        }catch(EntityNotFoundException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
     }
 }
